@@ -15,7 +15,6 @@ import org.apache.http.conn.ssl.TrustAllStrategy;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,14 +96,27 @@ public class IRequestServiceImpl implements IRequestService {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
             case 404:
                 throw new NotResultException();
+            case 405:
+                logger.error(
+                        "La requete n'est pas autorisée");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
             case 415:
                 logger.error("Erreur de format dans la requete (peut être Content-type)");
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 429:
+                logger.error("Nombre limite de requete effectué");
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Error during RIOT API request");
             case 500:
                 logger.error("Erreur lors du traitement de la réponse par l'API de RIOT");
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 502:
+                logger.error("Erreur lors du traitement de la réponse par l'API de RIOT, bad gateway");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
             case 503:
                 logger.error("API de riot indisponible");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 504:
+                logger.error("API de riot timeout");
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
         }
     }
