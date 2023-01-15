@@ -1,14 +1,13 @@
 package apony.lol.LooserQAnalyse.service.interfaces;
 
 import org.apache.http.client.HttpClient;
-import org.json.JSONObject;
 
-import apony.lol.LooserQAnalyse.model.enumeration.Regions;
+import apony.lol.LooserQAnalyse.exception.NotResultException;
 
 public interface IRequestService {
     HttpClient createHttpClient();
 
-    StringBuilder createRequestUri(Regions region, String summonerEndmpoint);
+    StringBuilder createRequestUri(String baseUrl, String summonerEndmpoint);
 
-    JSONObject sendGetRequest(String req, HttpClient httpClient);
+    String sendGetRequest(String req, HttpClient httpClient) throws NotResultException;
 }

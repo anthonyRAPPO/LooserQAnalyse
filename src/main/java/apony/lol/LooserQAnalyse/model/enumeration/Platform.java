@@ -1,6 +1,6 @@
 package apony.lol.LooserQAnalyse.model.enumeration;
 
-public enum Regions {
+public enum Platform {
     BR("br1.api.riotgames.com"),
     EUN("eun1.api.riotgames.com"),
     EUW("euw1.api.riotgames.com"),
@@ -15,7 +15,7 @@ public enum Regions {
 
     private final String path;
 
-    private Regions(String path) {
+    private Platform(String path) {
         this.path = path;
     }
 

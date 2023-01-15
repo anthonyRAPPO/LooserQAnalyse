@@ -23,7 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import apony.lol.LooserQAnalyse.model.enumeration.Regions;
+import apony.lol.LooserQAnalyse.exception.NotResultException;
 import apony.lol.LooserQAnalyse.service.interfaces.IRequestService;
 
 @Service
@@ -53,18 +53,19 @@ public class IRequestServiceImpl implements IRequestService {
     }
 
     @Override
-    public StringBuilder createRequestUri(Regions region, String summonerEndmpoint) {
+    public StringBuilder createRequestUri(String baseUrl, String summonerEndmpoint) {
         StringBuilder strb = new StringBuilder("https://");
-        strb.append(region.getPath());
+        strb.append(baseUrl);
         strb.append(summonerEndmpoint);
         return strb;
     }
 
     @Override
-    public JSONObject sendGetRequest(String req, HttpClient httpClient) {
+    public String sendGetRequest(String req, HttpClient httpClient) throws NotResultException {
         HttpGet httpGet = new HttpGet(req);
         httpGet.setHeader(RIOT_TOKEN_NAME, riotToken);
         try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet)) {
+            checkResponseCode(response);
             HttpEntity entity = response.getEntity();
             if (Objects.isNull(entity)) {
                 logger.error(String.format("Erreur, réponse NULL pour la requete %s", req));
@@ -74,10 +75,37 @@ public class IRequestServiceImpl implements IRequestService {
             }
             String retSrc = EntityUtils.toString(entity);
             EntityUtils.consume(entity);
-            return new JSONObject(retSrc);
+            return retSrc;
         } catch (IOException e) {
             logger.error("Erreur lors de l'envoie de la requête HTTP GET", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error,can't request RIOT API");
+        }
+    }
+
+    private void checkResponseCode(CloseableHttpResponse response) throws NotResultException {
+        int code = response.getStatusLine().getStatusCode();
+        switch (code) {
+            case 400:
+                logger.error("Requete envoyée invalide");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 401:
+                logger.error("La requete ne possède pas le necessaire pour l'authentification (API KEY)");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 403:
+                logger.error(
+                        "La requete ne possède pas le necessaire pour l'authentification (API KEY,blacklist,path non supporté)");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 404:
+                throw new NotResultException();
+            case 415:
+                logger.error("Erreur de format dans la requete (peut être Content-type)");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 500:
+                logger.error("Erreur lors du traitement de la réponse par l'API de RIOT");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
+            case 503:
+                logger.error("API de riot indisponible");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error during RIOT API request");
         }
     }
 

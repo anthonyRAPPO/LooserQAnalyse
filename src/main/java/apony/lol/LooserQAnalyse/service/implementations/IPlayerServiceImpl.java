@@ -1,20 +1,6 @@
 package apony.lol.LooserQAnalyse.service.implementations;
 
-import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.util.Objects;
-
-import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.TrustAllStrategy;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,7 +10,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import apony.lol.LooserQAnalyse.model.enumeration.Regions;
+import apony.lol.LooserQAnalyse.exception.NotResultException;
+import apony.lol.LooserQAnalyse.model.enumeration.Platform;
 import apony.lol.LooserQAnalyse.service.interfaces.IPlayerService;
 import apony.lol.LooserQAnalyse.service.interfaces.IRequestService;
 
@@ -34,17 +21,18 @@ public class IPlayerServiceImpl implements IPlayerService {
     @Autowired
     IRequestService requestService;
 
-    private static final String SUMMONER_ENDMPOINT = "/lol/summoner/v4/summoners/by-name/";
+    private static final String SUMMONER_BY_NAME_ENDPOINT = "/lol/summoner/v4/summoners/by-name/";
 
     Logger logger = LoggerFactory.getLogger(IPlayerServiceImpl.class);
 
     @Override
-    public String getPlayerPuuidByNameAndRegion(String name, Regions region) {
+    public String getPlayerPuuidByNameAndPlatform(String name, Platform platform) throws NotResultException {
         HttpClient httpClient = requestService.createHttpClient();
-        StringBuilder strbUri = requestService.createRequestUri(region, SUMMONER_ENDMPOINT);
+        StringBuilder strbUri = requestService.createRequestUri(platform.getPath(), SUMMONER_BY_NAME_ENDPOINT);
         strbUri.append(name);
-        JSONObject resJson = requestService.sendGetRequest(strbUri.toString(), httpClient);
+        String res = requestService.sendGetRequest(strbUri.toString(), httpClient);
         try {
+            JSONObject resJson = new JSONObject(res);
             return resJson.getString("puuid");
         } catch (JSONException e) {
             logger.error("Erreur lors de la récupération du puuid", e);

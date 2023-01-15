@@ -1,7 +1,8 @@
 package apony.lol.LooserQAnalyse.service.interfaces;
 
-import apony.lol.LooserQAnalyse.model.enumeration.Regions;
+import apony.lol.LooserQAnalyse.exception.NotResultException;
+import apony.lol.LooserQAnalyse.model.enumeration.Platform;
 
 public interface IPlayerService {
-    String getPlayerPuuidByNameAndRegion(String name, Regions region);
+    String getPlayerPuuidByNameAndPlatform(String name, Platform region) throws NotResultException;
 }
