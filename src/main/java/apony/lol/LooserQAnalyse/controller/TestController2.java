@@ -1,10 +1,8 @@
 package apony.lol.LooserQAnalyse.controller;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -52,6 +50,7 @@ public class TestController2 {
                     queue, dateLimiteRecherche, dateCreationGame, nbGame);
             List<Game> gameParticipantLst = gameService.getGameListByGameIdList(participantGameIds);
             gameService.fillRecapByLstGame(gameParticipantLst, participant.getPuuid(), recap, isAlly);
+
         }
 
         return recap;

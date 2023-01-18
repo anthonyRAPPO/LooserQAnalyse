@@ -82,7 +82,9 @@ public class IGameServiceImpl implements IGameService {
             participant.setWin(participantJson.getBoolean("win"));
             participantLst.add(participant);
         }
-        return new Game(gameid, participantLst, info.getLong("gameCreation"));
+        String gameCreationStr = String.valueOf(info.getLong("gameCreation"));
+        return new Game(gameid, participantLst,
+                Long.parseLong(gameCreationStr.substring(0, gameCreationStr.length() - 3)));
 
     }
 
@@ -90,7 +92,10 @@ public class IGameServiceImpl implements IGameService {
     public List<Game> getGameListByGameIdList(List<String> userGameIds) throws NotResultException {
         List<Game> lstgame = new ArrayList<>();
         for (String gameId : userGameIds) {
-            lstgame.add(getGameById(gameId));
+            if (!gameId.isEmpty()) {
+                lstgame.add(getGameById(gameId));
+            }
+
         }
         return lstgame;
     }

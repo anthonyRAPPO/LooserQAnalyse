@@ -5,6 +5,7 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.HttpClient;
@@ -17,16 +18,21 @@ import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import apony.lol.LooserQAnalyse.exception.NotResultException;
+import apony.lol.LooserQAnalyse.service.interfaces.IRefService;
 import apony.lol.LooserQAnalyse.service.interfaces.IRequestService;
 
 @Service
 public class IRequestServiceImpl implements IRequestService {
+
+    @Autowired
+    IRefService refService;
 
     private static final String RIOT_TOKEN_NAME = "X-Riot-Token";
 
@@ -63,22 +69,42 @@ public class IRequestServiceImpl implements IRequestService {
     public String sendGetRequest(String req, HttpClient httpClient) throws NotResultException {
         HttpGet httpGet = new HttpGet(req);
         httpGet.setHeader(RIOT_TOKEN_NAME, riotToken);
-        try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet)) {
-            checkResponseCode(response);
-            HttpEntity entity = response.getEntity();
-            if (Objects.isNull(entity)) {
-                logger.error(String.format("Erreur, réponse NULL pour la requete %s", req));
+        logger.info(String.format("Envoie de la requete : %s ", req));
+        if (requestLimitOk()) {
+            try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet)) {
+                checkResponseCode(response);
+                HttpEntity entity = response.getEntity();
+                if (Objects.isNull(entity)) {
+                    logger.error(String.format("Erreur, réponse NULL pour la requete %s", req));
+                    EntityUtils.consume(entity);
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Error, invalid response by RIOT API");
+                }
+                String retSrc = EntityUtils.toString(entity);
                 EntityUtils.consume(entity);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Error, invalid response by RIOT API");
+                return retSrc;
+            } catch (IOException e) {
+                logger.error("Erreur lors de l'envoie de la requête HTTP GET", e);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error,can't request RIOT API");
             }
-            String retSrc = EntityUtils.toString(entity);
-            EntityUtils.consume(entity);
-            return retSrc;
-        } catch (IOException e) {
-            logger.error("Erreur lors de l'envoie de la requête HTTP GET", e);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error,can't request RIOT API");
+        } else {
+            logger.error("Trop de requêtes ont été envoyées à l'API de riot");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "To much request send to RIOT API,please try later");
         }
+    }
+
+    private boolean requestLimitOk() {
+        int i = 0;
+        while (!refService.canRequest() && i < 200) {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+                i++;
+            } catch (InterruptedException e) {
+                logger.error("methode sleep interrompue", e);
+            }
+        }
+        return !(i == 10);
     }
 
     private void checkResponseCode(CloseableHttpResponse response) throws NotResultException {
