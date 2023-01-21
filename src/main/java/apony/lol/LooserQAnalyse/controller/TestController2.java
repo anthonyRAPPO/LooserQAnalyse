@@ -28,31 +28,41 @@ public class TestController2 {
 
     @GetMapping("/")
     public Recap index() throws NotResultException {
-        int nbGame = 10;
-        int nbJourMax = 100;
-        Queue queue = Queue.RANKED_SOLO;
-        String userPuuid = playerService.getPlayerPuuidByNameAndPlatform("Apony", Platform.EUW);
-        LocalDateTime dateFin = LocalDateTime.now();
-        LocalDateTime dateDebut = dateFin.minusDays(nbJourMax);
-        List<String> userGameIds = gameService.getHistoryByPuuidQueueDateNumber(userPuuid, queue, dateDebut,
-                dateFin, nbGame);
-        List<Game> gameUserLst = gameService.getGameListByGameIdList(userGameIds);
-        Game selectedGame = gameUserLst.get(0);
-        int teamId = gameService.getTeamIdFromPuuid(selectedGame, userPuuid);
-        Recap recap = new Recap();
-        gameService.fillRecapByLstGame(gameUserLst, userPuuid, recap, true);
-        LocalDateTime dateCreationGame = LocalDateTime.ofEpochSecond(selectedGame.getTimeStampCreation(), 0,
-                ZoneOffset.UTC);
-        LocalDateTime dateLimiteRecherche = dateCreationGame.minusDays(nbJourMax);
-        for (Participant participant : selectedGame.getLstParticipants()) {
-            boolean isAlly = (participant.getTeamId() == teamId);
-            List<String> participantGameIds = gameService.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
-                    queue, dateLimiteRecherche, dateCreationGame, nbGame);
-            List<Game> gameParticipantLst = gameService.getGameListByGameIdList(participantGameIds);
-            gameService.fillRecapByLstGame(gameParticipantLst, participant.getPuuid(), recap, isAlly);
-
-        }
-
-        return recap;
+        /*
+         * int nbGame = 10;
+         * int nbJourMax = 100;
+         * Queue queue = Queue.RANKED_SOLO;
+         * String userPuuid = playerService.getPlayerPuuidByNameAndPlatform("Apony",
+         * Platform.EUW);
+         * LocalDateTime dateFin = LocalDateTime.now();
+         * LocalDateTime dateDebut = dateFin.minusDays(nbJourMax);
+         * List<String> userGameIds =
+         * gameService.getHistoryByPuuidQueueDateNumber(userPuuid, queue, dateDebut,
+         * dateFin, nbGame);
+         * List<Game> gameUserLst = gameService.getGameListByGameIdList(userGameIds,
+         * userPuuid);
+         * Game selectedGame = gameUserLst.get(0);
+         * int teamId = gameService.getTeamIdFromPuuid(selectedGame, userPuuid);
+         * Recap recap = new Recap();
+         * gameService.fillRecapByLstGame(gameUserLst, userPuuid, recap, true);
+         * LocalDateTime dateCreationGame =
+         * LocalDateTime.ofEpochSecond(selectedGame.getTimeStampCreation(), 0,
+         * ZoneOffset.UTC);
+         * LocalDateTime dateLimiteRecherche = dateCreationGame.minusDays(nbJourMax);
+         * for (Participant participant : selectedGame.getLstParticipants()) {
+         * boolean isAlly = (participant.getTeamId() == teamId);
+         * List<String> participantGameIds =
+         * gameService.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
+         * queue, dateLimiteRecherche, dateCreationGame, nbGame);
+         * List<Game> gameParticipantLst =
+         * gameService.getGameListByGameIdList(participantGameIds, userPuuid);
+         * gameService.fillRecapByLstGame(gameParticipantLst, participant.getPuuid(),
+         * recap, isAlly);
+         * 
+         * }
+         * 
+         * return recap;
+         */
+        return null;
     }
 }

@@ -43,59 +43,71 @@ public class IGameServiceImpl implements IGameService {
     Logger logger = LoggerFactory.getLogger(IGameServiceImpl.class);
 
     @Override
-    public List<String> getHistoryByPuuidQueueDateNumber(String userPuuid, Queue queue, LocalDateTime dateDebut,
-            LocalDateTime dateFin, int count) throws NotResultException {
+    public List<String> getHistoryByPuuidQueueDateNumber(String userPuuid, Queue queue, long dateDebutEpochSecond,
+            long dateFinEpochSecond, int count, Region region) throws NotResultException {
 
         HttpClient httpClient = requestService.createHttpClient();
-        StringBuilder strbUri = requestService.createRequestUri(Region.EUROPE.getPath(),
+        StringBuilder strbUri = requestService.createRequestUri(region.getPath(),
                 String.format("%s%s/ids?count=%d&startTime=%d&endTime=%d&queue=%d", MATCH_BY_PUUID_ENDPOINT, userPuuid,
-                        count, dateDebut.toEpochSecond(ZoneOffset.UTC), dateFin.toEpochSecond(ZoneOffset.UTC),
+                        count, dateDebutEpochSecond, dateFinEpochSecond,
                         queue.getId()));
         String res = requestService.sendGetRequest(strbUri.toString(), httpClient);
         return utilService.convertResponseToListString(res);
     }
 
     @Override
-    public Game getGameById(String gameid) throws NotResultException {
+    public Game getGameById(String gameid, String userPuuid, Region region) throws NotResultException {
         HttpClient httpClient = requestService.createHttpClient();
-        StringBuilder strbUri = requestService.createRequestUri(Region.EUROPE.getPath(), MATCH_BY_ID_ENDPOINT);
+        StringBuilder strbUri = requestService.createRequestUri(region.getPath(), MATCH_BY_ID_ENDPOINT);
         strbUri.append(gameid);
         String res = requestService.sendGetRequest(strbUri.toString(), httpClient);
         try {
             JSONObject resJson = new JSONObject(res);
-            return convertResJsonToGame(resJson, gameid);
+            return convertResJsonToGame(resJson, gameid, userPuuid);
         } catch (JSONException e) {
             logger.error("Erreur lors de la récupération de la game par id", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error, invalid response by RIOT API");
         }
     }
 
-    private Game convertResJsonToGame(JSONObject resJson, String gameid) {
+    private Game convertResJsonToGame(JSONObject resJson, String gameid, String userPuuid) {
         JSONObject info = resJson.getJSONObject("info");
         List<Participant> participantLst = new ArrayList<>();
         JSONArray participantsJsonLst = info.getJSONArray("participants");
+        int teamId = -1;
+        boolean win = false;
         for (int i = 0; i < participantsJsonLst.length(); i++) {
             Participant participant = new Participant();
             JSONObject participantJson = participantsJsonLst.getJSONObject(i);
             participant.setPuuid(participantJson.getString("puuid"));
             participant.setTeamId(participantJson.getInt("teamId"));
             participant.setWin(participantJson.getBoolean("win"));
+            if (participant.getPuuid().equals(userPuuid)) {
+                teamId = participantJson.getInt("teamId");
+                win = participant.isWin();
+            }
             participantLst.add(participant);
         }
         String gameCreationStr = String.valueOf(info.getLong("gameCreation"));
+        if (teamId == -1) {
+            logger.error("Erreur lors de la recuperation de l'id team");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error, invalid response by RIOT API");
+        }
         return new Game(gameid, participantLst,
-                Long.parseLong(gameCreationStr.substring(0, gameCreationStr.length() - 3)));
-
+                Long.parseLong(gameCreationStr.substring(0, gameCreationStr.length() - 3)), teamId, win);
     }
 
     @Override
-    public List<Game> getGameListByGameIdList(List<String> userGameIds) throws NotResultException {
+    public List<Game> getGameListByGameIdList(List<String> userGameIds, String userPuuid, Region region) {
         List<Game> lstgame = new ArrayList<>();
         for (String gameId : userGameIds) {
             if (!gameId.isEmpty()) {
-                lstgame.add(getGameById(gameId));
+                try {
+                    lstgame.add(getGameById(gameId, userPuuid, region));
+                } catch (NotResultException e) {
+                    logger.error(String.format("La game avec l'id = %s n'a pas été trouvée", gameId), e);
+                }
             }
-
         }
         return lstgame;
     }
@@ -135,6 +147,40 @@ public class IGameServiceImpl implements IGameService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return lstParticipantUser.get(0);
+    }
+
+    @Override
+    public void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region) {
+        LocalDateTime dateCreationGame = LocalDateTime.ofEpochSecond(game.getTimeStampCreation(), 0,
+                ZoneOffset.UTC);
+        LocalDateTime dateLimiteRecherche = dateCreationGame.minusDays(100);
+        // Pour la game passée en parametre on recupere l'ensemble des participants
+        for (Participant participant : game.getLstParticipants()) {
+            try {
+                // pour chaque participant on recupere les x dernière games
+                List<String> participantGameIds = this.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
+                        queue, dateLimiteRecherche.toEpochSecond(ZoneOffset.UTC),
+                        dateCreationGame.toEpochSecond(ZoneOffset.UTC), nbGame, region);
+                List<Game> gameParticipantLst = this.getGameListByGameIdList(participantGameIds, participant.getPuuid(),
+                        region);
+                if (gameParticipantLst.isEmpty()) {
+                    logger.error("Erreur lors de la récupératoin des games par id");
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+                }
+                // on comptabilise le nombre de win/loose pour chaque participant
+                for (Game gameParticipant : gameParticipantLst) {
+                    if (gameParticipant.isWin()) {
+                        participant.incrementTotalWin();
+                    } else {
+                        participant.incrementTotalLoose();
+                    }
+                }
+                result.add(participant);
+            } catch (NotResultException e) {
+                logger.warn(String.format("L'historique du participant %s n'a pas pu être retrouvé",
+                        participant.getPuuid()));
+            }
+        }
     }
 
 }
