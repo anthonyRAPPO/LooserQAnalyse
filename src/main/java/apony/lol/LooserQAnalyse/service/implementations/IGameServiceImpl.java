@@ -76,25 +76,37 @@ public class IGameServiceImpl implements IGameService {
         JSONArray participantsJsonLst = info.getJSONArray("participants");
         int teamId = -1;
         boolean win = false;
+        String champPlayed = "";
+        int kills = -1;
+        int deaths = -1;
+        int assists = -1;
         for (int i = 0; i < participantsJsonLst.length(); i++) {
             Participant participant = new Participant();
             JSONObject participantJson = participantsJsonLst.getJSONObject(i);
             participant.setPuuid(participantJson.getString("puuid"));
             participant.setTeamId(participantJson.getInt("teamId"));
             participant.setWin(participantJson.getBoolean("win"));
+            participant.setSummonerName(participantJson.getString("summonerName"));
+            participant.setChampionPlayed(participantJson.getString("championName"));
+            participant.setTeamPosition(participantJson.getString("teamPosition"));
             if (participant.getPuuid().equals(userPuuid)) {
                 teamId = participantJson.getInt("teamId");
                 win = participant.isWin();
+                champPlayed = participant.getChampionPlayed();
+                kills = participantJson.getInt("kills");
+                deaths = participantJson.getInt("deaths");
+                assists = participantJson.getInt("assists");
             }
             participantLst.add(participant);
         }
         String gameCreationStr = String.valueOf(info.getLong("gameCreation"));
-        if (teamId == -1) {
+        if (teamId == -1 || champPlayed.isEmpty() || kills == -1 || deaths == -1 || assists == -1) {
             logger.error("Erreur lors de la recuperation de l'id team");
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error, invalid response by RIOT API");
         }
         return new Game(gameid, participantLst,
-                Long.parseLong(gameCreationStr.substring(0, gameCreationStr.length() - 3)), teamId, win);
+                Long.parseLong(gameCreationStr.substring(0, gameCreationStr.length() - 3)), teamId, win, champPlayed,
+                userPuuid, assists, deaths, kills);
     }
 
     @Override

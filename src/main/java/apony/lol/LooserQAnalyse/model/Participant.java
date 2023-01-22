@@ -6,16 +6,23 @@ public class Participant {
     private boolean win;
     private int totalWin;
     private int totalLoose;
+    private String championPlayed;
+    private String summonerName;
+    private String teamPosition;
 
     public Participant() {
         this.totalWin = 0;
         this.totalLoose = 0;
     }
 
-    public Participant(String puuid, int teamId, boolean win) {
+    public Participant(String puuid, int teamId, boolean win, String championPlayed, String summonerName,
+            String teamPosition) {
         this.puuid = puuid;
         this.teamId = teamId;
         this.win = win;
+        this.championPlayed = championPlayed;
+        this.summonerName = summonerName;
+        this.teamPosition = teamPosition;
         this.totalWin = 0;
         this.totalLoose = 0;
     }
@@ -59,6 +66,30 @@ public class Participant {
 
     public void incrementTotalLoose() {
         this.totalLoose++;
+    }
+
+    public String getChampionPlayed() {
+        return championPlayed;
+    }
+
+    public void setChampionPlayed(String championPlayed) {
+        this.championPlayed = championPlayed;
+    }
+
+    public String getSummonerName() {
+        return summonerName;
+    }
+
+    public void setSummonerName(String summonerName) {
+        this.summonerName = summonerName;
+    }
+
+    public String getTeamPosition() {
+        return teamPosition;
+    }
+
+    public void setTeamPosition(String teamPosition) {
+        this.teamPosition = teamPosition;
     }
 
 }
