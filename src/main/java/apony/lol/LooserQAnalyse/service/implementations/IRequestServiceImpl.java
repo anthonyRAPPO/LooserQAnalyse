@@ -89,7 +89,7 @@ public class IRequestServiceImpl implements IRequestService {
             }
         } else {
             logger.error("Trop de requêtes ont été envoyées à l'API de riot");
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
                     "To much request send to RIOT API,please try later");
         }
     }
