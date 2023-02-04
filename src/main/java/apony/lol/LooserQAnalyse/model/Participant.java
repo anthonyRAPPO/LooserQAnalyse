@@ -9,6 +9,7 @@ public class Participant {
     private String championPlayed;
     private String summonerName;
     private String teamPosition;
+    private boolean isAlly;
 
     public Participant() {
         this.totalWin = 0;
@@ -16,7 +17,7 @@ public class Participant {
     }
 
     public Participant(String puuid, int teamId, boolean win, String championPlayed, String summonerName,
-            String teamPosition) {
+            String teamPosition, boolean isAlly) {
         this.puuid = puuid;
         this.teamId = teamId;
         this.win = win;
@@ -25,6 +26,7 @@ public class Participant {
         this.teamPosition = teamPosition;
         this.totalWin = 0;
         this.totalLoose = 0;
+        this.isAlly = isAlly;
     }
 
     public String getPuuid() {
@@ -90,6 +92,22 @@ public class Participant {
 
     public void setTeamPosition(String teamPosition) {
         this.teamPosition = teamPosition;
+    }
+
+    public void setTotalWin(int totalWin) {
+        this.totalWin = totalWin;
+    }
+
+    public void setTotalLoose(int totalLoose) {
+        this.totalLoose = totalLoose;
+    }
+
+    public boolean isAlly() {
+        return isAlly;
+    }
+
+    public void setAlly(boolean isAlly) {
+        this.isAlly = isAlly;
     }
 
 }

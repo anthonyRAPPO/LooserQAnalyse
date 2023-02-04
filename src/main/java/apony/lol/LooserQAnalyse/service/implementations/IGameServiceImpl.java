@@ -169,6 +169,8 @@ public class IGameServiceImpl implements IGameService {
         // Pour la game passée en parametre on recupere l'ensemble des participants
         for (Participant participant : game.getLstParticipants()) {
             try {
+                // on determine si le participant est un allié
+                participant.setAlly(participant.getTeamId() == game.getAllyTeam());
                 // pour chaque participant on recupere les x dernière games
                 List<String> participantGameIds = this.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
                         queue, dateLimiteRecherche.toEpochSecond(ZoneOffset.UTC),
