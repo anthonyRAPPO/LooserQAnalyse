@@ -1,6 +1,10 @@
 package apony.lol.LooserQAnalyse.service.implementations;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -67,31 +71,38 @@ public class IRequestServiceImpl implements IRequestService {
 
     @Override
     public String sendGetRequest(String req, HttpClient httpClient) throws NotResultException {
-        HttpGet httpGet = new HttpGet(req);
-        httpGet.setHeader(RIOT_TOKEN_NAME, riotToken);
-        logger.info(String.format("Envoie de la requete : %s ", req));
-        if (requestLimitOk()) {
-            try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet)) {
-                checkResponseCode(response);
-                HttpEntity entity = response.getEntity();
-                if (Objects.isNull(entity)) {
-                    logger.error(String.format("Erreur, réponse NULL pour la requete %s", req));
+        try {
+            URI urlObject = new URI(URLEncoder.encode(req, "UTF-8"));
+            HttpGet httpGet = new HttpGet(urlObject.getPath());
+            httpGet.setHeader(RIOT_TOKEN_NAME, riotToken);
+            logger.info(String.format("Envoie de la requete : %s ", req));
+            if (requestLimitOk()) {
+                try (CloseableHttpResponse response = (CloseableHttpResponse) httpClient.execute(httpGet)) {
+                    checkResponseCode(response);
+                    HttpEntity entity = response.getEntity();
+                    if (Objects.isNull(entity)) {
+                        logger.error(String.format("Erreur, réponse NULL pour la requete %s", req));
+                        EntityUtils.consume(entity);
+                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                                "Error, invalid response by RIOT API");
+                    }
+                    String retSrc = EntityUtils.toString(entity);
                     EntityUtils.consume(entity);
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                            "Error, invalid response by RIOT API");
+                    return retSrc;
+                } catch (IOException e) {
+                    logger.error("Erreur lors de l'envoie de la requête HTTP GET", e);
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error,can't request RIOT API");
                 }
-                String retSrc = EntityUtils.toString(entity);
-                EntityUtils.consume(entity);
-                return retSrc;
-            } catch (IOException e) {
-                logger.error("Erreur lors de l'envoie de la requête HTTP GET", e);
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error,can't request RIOT API");
+            } else {
+                logger.error("Trop de requêtes ont été envoyées à l'API de riot");
+                throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                        "To much request send to RIOT API,please try later");
             }
-        } else {
-            logger.error("Trop de requêtes ont été envoyées à l'API de riot");
-            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
-                    "To much request send to RIOT API,please try later");
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
+            logger.error("Erreur lors de l'envoie de l'encriptage UTF8 de la requete'", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error,can't request RIOT API");
         }
+
     }
 
     private boolean requestLimitOk() {

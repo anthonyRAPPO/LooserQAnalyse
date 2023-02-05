@@ -5,8 +5,11 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import apony.lol.LooserQAnalyse.model.Participant;
 import apony.lol.LooserQAnalyse.model.enumeration.Platform;
+import apony.lol.LooserQAnalyse.model.enumeration.Queue;
 import apony.lol.LooserQAnalyse.model.enumeration.Region;
+import apony.lol.LooserQAnalyse.model.enumeration.Tier;
 import apony.lol.LooserQAnalyse.service.interfaces.IUtilService;
 
 @Service
@@ -49,6 +52,18 @@ public class IUtilServiceImpl implements IUtilService {
                 return Region.EUROPE;
         }
         return null;
+    }
+
+    @Override
+    public void fillParticipantElo(Participant participant) {
+        if (participant.getTier().equals(Tier.CHALLENGER) || participant.getTier().equals(Tier.GRANDMASTER)
+                || participant.getTier().equals(Tier.MASTER)) {
+            participant.setCalculatedElo(participant.getTier().getElo() + participant.getLeaguePoints());
+        } else {
+
+            participant.setCalculatedElo(
+                    participant.getRank().getElo() + participant.getTier().getElo() + participant.getLeaguePoints());
+        }
     }
 
 }

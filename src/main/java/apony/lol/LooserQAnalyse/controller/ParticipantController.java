@@ -42,9 +42,9 @@ public class ParticipantController {
     Logger logger = LoggerFactory.getLogger(ParticipantController.class);
 
     @PostMapping("/{queue}:{platform}:{numberGame}")
-    public List<Participant> getParticipantByGames(@RequestBody List<Game> gameLst, @PathVariable("queue") Queue queue,
+    public List<Participant> getParticipantByGame(@RequestBody Game game, @PathVariable("queue") Queue queue,
             @PathVariable("platform") Platform platform, @PathVariable("numberGame") int numberGame) {
-        if (!isRequestCorrect(gameLst, queue, platform, numberGame)) {
+        if (!isRequestCorrect(game, queue, platform, numberGame)) {
             logger.warn("Une requete incorrecte à été receptionnée");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect variable sent");
         }
@@ -54,14 +54,13 @@ public class ParticipantController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect variable sent");
         }
         List<Participant> result = new ArrayList<>();
-        for (Game game : gameLst) {
-            gameService.fillParticipantLstForGame(result, game, queue, numberGame, region);
-        }
+        gameService.fillParticipantLstForGame(result, game, queue, numberGame, region, platform);
+
         return result;
     }
 
-    private boolean isRequestCorrect(List<Game> gameLst, Queue queue, Platform platform, int numberGame) {
-        return (Objects.nonNull(gameLst) && !gameLst.isEmpty() && Objects.nonNull(queue) && Objects.nonNull(platform)
+    private boolean isRequestCorrect(Game game, Queue queue, Platform platform, int numberGame) {
+        return (Objects.nonNull(game) && Objects.nonNull(queue) && Objects.nonNull(platform)
                 && numberGame > 0 && numberGame < 20);
     }
 

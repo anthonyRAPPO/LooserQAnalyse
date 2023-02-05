@@ -22,8 +22,11 @@ import apony.lol.LooserQAnalyse.exception.NotResultException;
 import apony.lol.LooserQAnalyse.model.Game;
 import apony.lol.LooserQAnalyse.model.Participant;
 import apony.lol.LooserQAnalyse.model.Recap;
+import apony.lol.LooserQAnalyse.model.enumeration.Platform;
 import apony.lol.LooserQAnalyse.model.enumeration.Queue;
+import apony.lol.LooserQAnalyse.model.enumeration.Rank;
 import apony.lol.LooserQAnalyse.model.enumeration.Region;
+import apony.lol.LooserQAnalyse.model.enumeration.Tier;
 import apony.lol.LooserQAnalyse.service.interfaces.IGameService;
 import apony.lol.LooserQAnalyse.service.interfaces.IRequestService;
 import apony.lol.LooserQAnalyse.service.interfaces.IUtilService;
@@ -33,6 +36,7 @@ public class IGameServiceImpl implements IGameService {
 
     private static final String MATCH_BY_PUUID_ENDPOINT = "/lol/match/v5/matches/by-puuid/";
     private static final String MATCH_BY_ID_ENDPOINT = "/lol/match/v5/matches/";
+    private static final String LEAGUE_BY_SUMMONER_ENDPOINT = "/lol/league/v4/entries/by-summoner/";
 
     @Autowired
     IRequestService requestService;
@@ -83,6 +87,7 @@ public class IGameServiceImpl implements IGameService {
         for (int i = 0; i < participantsJsonLst.length(); i++) {
             Participant participant = new Participant();
             JSONObject participantJson = participantsJsonLst.getJSONObject(i);
+            participant.setId(participantJson.getString("summonerId"));
             participant.setPuuid(participantJson.getString("puuid"));
             participant.setTeamId(participantJson.getInt("teamId"));
             participant.setWin(participantJson.getBoolean("win"));
@@ -162,7 +167,8 @@ public class IGameServiceImpl implements IGameService {
     }
 
     @Override
-    public void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region) {
+    public void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region,
+            Platform platform) {
         LocalDateTime dateCreationGame = LocalDateTime.ofEpochSecond(game.getTimeStampCreation(), 0,
                 ZoneOffset.UTC);
         LocalDateTime dateLimiteRecherche = dateCreationGame.minusDays(100);
@@ -171,6 +177,8 @@ public class IGameServiceImpl implements IGameService {
             try {
                 // on determine si le participant est un allié
                 participant.setAlly(participant.getTeamId() == game.getAllyTeam());
+                // recupération des donnée de ranking du participant
+                this.fillRankInformationOfParticipant(participant, platform);
                 // pour chaque participant on recupere les x dernière games
                 List<String> participantGameIds = this.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
                         queue, dateLimiteRecherche.toEpochSecond(ZoneOffset.UTC),
@@ -195,6 +203,46 @@ public class IGameServiceImpl implements IGameService {
                         participant.getPuuid()));
             }
         }
+    }
+
+    private void fillRankInformationOfParticipant(Participant participant, Platform platform) {
+        HttpClient httpClient = requestService.createHttpClient();
+        StringBuilder strbUri = requestService.createRequestUri(platform.getPath(), LEAGUE_BY_SUMMONER_ENDPOINT);
+        strbUri.append(participant.getId());
+        try {
+            String res = requestService.sendGetRequest(strbUri.toString(), httpClient);
+            try {
+                JSONArray resJson = new JSONArray(res);
+                fillParticipantWithResJson(resJson, participant);
+            } catch (JSONException e) {
+                logger.error("Erreur lors de la récupération des information du participant", e);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Error, invalid response by RIOT API");
+            }
+        } catch (NotResultException e) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, String
+                    .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
+        }
+
+    }
+
+    private void fillParticipantWithResJson(JSONArray resJson, Participant participant) {
+        if (resJson.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NO_CONTENT, String
+                    .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
+        }
+        for (int i = 0; i < resJson.length(); i++) {
+            JSONObject rObject = resJson.getJSONObject(i);
+            if (rObject.getString("queueType").equals("RANKED_SOLO_5x5")) {
+                participant.setLeaguePoints(rObject.getInt("leaguePoints"));
+                participant.setTotalLooseSeason(rObject.getInt("losses"));
+                participant.setTotalWinSeason(rObject.getInt("wins"));
+                participant.setRank(Rank.valueOf(rObject.getString("rank")));
+                participant.setTier(Tier.valueOf(rObject.getString("tier")));
+                utilService.fillParticipantElo(participant);
+            }
+        }
+
     }
 
 }

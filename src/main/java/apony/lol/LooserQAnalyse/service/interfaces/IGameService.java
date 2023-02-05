@@ -6,6 +6,7 @@ import apony.lol.LooserQAnalyse.exception.NotResultException;
 import apony.lol.LooserQAnalyse.model.Game;
 import apony.lol.LooserQAnalyse.model.Participant;
 import apony.lol.LooserQAnalyse.model.Recap;
+import apony.lol.LooserQAnalyse.model.enumeration.Platform;
 import apony.lol.LooserQAnalyse.model.enumeration.Queue;
 import apony.lol.LooserQAnalyse.model.enumeration.Region;
 
@@ -22,6 +23,7 @@ public interface IGameService {
 
     int getTeamIdFromPuuid(Game selectedGame, String userPuuid);
 
-    void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region);
+    void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region,
+            Platform platform);
 
 }

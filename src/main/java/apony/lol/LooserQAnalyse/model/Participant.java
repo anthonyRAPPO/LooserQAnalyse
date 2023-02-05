@@ -1,6 +1,10 @@
 package apony.lol.LooserQAnalyse.model;
 
+import apony.lol.LooserQAnalyse.model.enumeration.Rank;
+import apony.lol.LooserQAnalyse.model.enumeration.Tier;
+
 public class Participant {
+    private String id;
     private String puuid;
     private int teamId;
     private boolean win;
@@ -10,23 +14,37 @@ public class Participant {
     private String summonerName;
     private String teamPosition;
     private boolean isAlly;
+    private Tier tier;
+    private Rank rank;
+    private int leaguePoints;
+    private int totalWinSeason;
+    private int totalLooseSeason;
+    private int calculatedElo;
 
     public Participant() {
         this.totalWin = 0;
         this.totalLoose = 0;
     }
 
-    public Participant(String puuid, int teamId, boolean win, String championPlayed, String summonerName,
-            String teamPosition, boolean isAlly) {
+    public Participant(String id, String puuid, int teamId, boolean win, int totalWin, int totalLoose,
+            String championPlayed, String summonerName, String teamPosition, boolean isAlly, Tier tier, Rank rank,
+            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo) {
+        this.id = id;
         this.puuid = puuid;
         this.teamId = teamId;
         this.win = win;
+        this.totalWin = totalWin;
+        this.totalLoose = totalLoose;
         this.championPlayed = championPlayed;
         this.summonerName = summonerName;
         this.teamPosition = teamPosition;
-        this.totalWin = 0;
-        this.totalLoose = 0;
         this.isAlly = isAlly;
+        this.tier = tier;
+        this.rank = rank;
+        this.leaguePoints = leaguePoints;
+        this.totalWinSeason = totalWinSeason;
+        this.totalLooseSeason = totalLooseSeason;
+        this.calculatedElo = calculatedElo;
     }
 
     public String getPuuid() {
@@ -108,6 +126,62 @@ public class Participant {
 
     public void setAlly(boolean isAlly) {
         this.isAlly = isAlly;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Tier getTier() {
+        return tier;
+    }
+
+    public void setTier(Tier tier) {
+        this.tier = tier;
+    }
+
+    public Rank getRank() {
+        return rank;
+    }
+
+    public void setRank(Rank rank) {
+        this.rank = rank;
+    }
+
+    public int getLeaguePoints() {
+        return leaguePoints;
+    }
+
+    public void setLeaguePoints(int leaguePoints) {
+        this.leaguePoints = leaguePoints;
+    }
+
+    public int getTotalWinSeason() {
+        return totalWinSeason;
+    }
+
+    public void setTotalWinSeason(int totalWinSeason) {
+        this.totalWinSeason = totalWinSeason;
+    }
+
+    public int getTotalLooseSeason() {
+        return totalLooseSeason;
+    }
+
+    public void setTotalLooseSeason(int totalLooseSeason) {
+        this.totalLooseSeason = totalLooseSeason;
+    }
+
+    public int getCalculatedElo() {
+        return calculatedElo;
+    }
+
+    public void setCalculatedElo(int calculatedElo) {
+        this.calculatedElo = calculatedElo;
     }
 
 }
