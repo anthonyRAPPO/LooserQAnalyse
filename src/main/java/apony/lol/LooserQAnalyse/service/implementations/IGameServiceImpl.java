@@ -220,16 +220,26 @@ public class IGameServiceImpl implements IGameService {
                         "Error, invalid response by RIOT API");
             }
         } catch (NotResultException e) {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, String
-                    .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
+            logger.error(String
+            .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()),e);
+            participant.setLeaguePoints(-1);
+            participant.setTotalLooseSeason(-1);
+            participant.setTotalWinSeason(-1);
+            participant.setRank(Rank.EMPTY);
+            participant.setTier(Tier.EMPTY);
         }
 
     }
 
     private void fillParticipantWithResJson(JSONArray resJson, Participant participant) {
         if (resJson.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NO_CONTENT, String
-                    .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
+            logger.error(String
+            .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
+            participant.setRank(Rank.EMPTY);
+            participant.setTier(Tier.EMPTY);
+            participant.setLeaguePoints(-1);
+            participant.setTotalLooseSeason(-1);
+            participant.setTotalWinSeason(-1);
         }
         for (int i = 0; i < resJson.length(); i++) {
             JSONObject rObject = resJson.getJSONObject(i);

@@ -1,7 +1,7 @@
 package apony.lol.LooserQAnalyse.model.enumeration;
 
 public enum Rank {
-    I(300), II(200), III(100), IV(0), V(0);
+    I(300), II(200), III(100), IV(0), V(0), EMPTY(0);
 
     private final int elo;
 
