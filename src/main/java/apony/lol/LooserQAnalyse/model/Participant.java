@@ -20,6 +20,9 @@ public class Participant {
     private int totalWinSeason;
     private int totalLooseSeason;
     private int calculatedElo;
+    private int kill;
+    private int death;
+    private int assist;
 
     public Participant() {
         this.totalWin = 0;
@@ -28,7 +31,7 @@ public class Participant {
 
     public Participant(String id, String puuid, int teamId, boolean win, int totalWin, int totalLoose,
             String championPlayed, String summonerName, String teamPosition, boolean isAlly, Tier tier, Rank rank,
-            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo) {
+            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo,int kill,int death,int assist) {
         this.id = id;
         this.puuid = puuid;
         this.teamId = teamId;
@@ -45,6 +48,9 @@ public class Participant {
         this.totalWinSeason = totalWinSeason;
         this.totalLooseSeason = totalLooseSeason;
         this.calculatedElo = calculatedElo;
+        this.kill= kill;
+        this.death= death;
+        this.assist= assist;
     }
 
     public String getPuuid() {
@@ -183,5 +189,31 @@ public class Participant {
     public void setCalculatedElo(int calculatedElo) {
         this.calculatedElo = calculatedElo;
     }
+
+    public int getKill() {
+        return kill;
+    }
+
+    public void setKill(int kill) {
+        this.kill = kill;
+    }
+
+    public int getDeath() {
+        return death;
+    }
+
+    public void setDeath(int death) {
+        this.death = death;
+    }
+
+    public int getAssist() {
+        return assist;
+    }
+
+    public void setAssist(int assist) {
+        this.assist = assist;
+    }
+
+    
 
 }

@@ -94,6 +94,9 @@ public class IGameServiceImpl implements IGameService {
             participant.setSummonerName(participantJson.getString("summonerName"));
             participant.setChampionPlayed(participantJson.getString("championName"));
             participant.setTeamPosition(participantJson.getString("teamPosition"));
+            participant.setKill(participantJson.getInt("kills"));
+            participant.setAssist(participantJson.getInt("assists"));
+            participant.setDeath(participantJson.getInt("deaths"));
             if (participant.getPuuid().equals(userPuuid)) {
                 teamId = participantJson.getInt("teamId");
                 win = participant.isWin();
