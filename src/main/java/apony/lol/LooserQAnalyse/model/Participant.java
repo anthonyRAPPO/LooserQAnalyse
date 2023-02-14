@@ -23,6 +23,7 @@ public class Participant {
     private int kill;
     private int death;
     private int assist;
+    private float kda;
 
     public Participant() {
         this.totalWin = 0;
@@ -31,7 +32,7 @@ public class Participant {
 
     public Participant(String id, String puuid, int teamId, boolean win, int totalWin, int totalLoose,
             String championPlayed, String summonerName, String teamPosition, boolean isAlly, Tier tier, Rank rank,
-            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo,int kill,int death,int assist) {
+            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo,int kill,int death,int assist,float kda) {
         this.id = id;
         this.puuid = puuid;
         this.teamId = teamId;
@@ -51,6 +52,7 @@ public class Participant {
         this.kill= kill;
         this.death= death;
         this.assist= assist;
+        this.kda=kda;
     }
 
     public String getPuuid() {
@@ -214,6 +216,15 @@ public class Participant {
         this.assist = assist;
     }
 
+    public float getKda() {
+        return kda;
+    }
+
+    public void setKda(float kda) {
+        this.kda = kda;
+    }
+
+    
     
 
 }

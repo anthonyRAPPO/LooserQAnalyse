@@ -180,7 +180,8 @@ public class IGameServiceImpl implements IGameService {
             try {
                 // on determine si le participant est un allié
                 participant.setAlly(participant.getTeamId() == game.getAllyTeam());
-                // recupération des donnée de ranking du participant
+                participant.setKda((float)((participant.getKill()+participant.getAssist())/(float)participant.getDeath()));
+                // recupération des données de ranking du participant
                 this.fillRankInformationOfParticipant(participant, platform);
                 // pour chaque participant on recupere les x dernière games
                 List<String> participantGameIds = this.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
