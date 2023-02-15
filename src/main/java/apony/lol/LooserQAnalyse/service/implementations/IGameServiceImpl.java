@@ -97,6 +97,13 @@ public class IGameServiceImpl implements IGameService {
             participant.setKill(participantJson.getInt("kills"));
             participant.setAssist(participantJson.getInt("assists"));
             participant.setDeath(participantJson.getInt("deaths"));
+            participant.setGold(participantJson.getInt("goldEarned"));
+            participant.setDmgDealt(participantJson.getInt("totalDamageDealt"));
+            participant.setDmgTaken(participantJson.getInt("totalDamageTaken"));
+            participant.setVisionScore(participantJson.getInt("visionScore"));
+            participant.setTotalcs(participantJson.getInt("totalMinionsKilled"));
+            participant.setLongestTimeLiving(participantJson.getInt("longestTimeSpentLiving"));
+
             if (participant.getPuuid().equals(userPuuid)) {
                 teamId = participantJson.getInt("teamId");
                 win = participant.isWin();

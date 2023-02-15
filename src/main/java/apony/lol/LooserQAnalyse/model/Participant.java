@@ -24,6 +24,12 @@ public class Participant {
     private int death;
     private int assist;
     private float kda;
+    private int gold;
+    private int dmgDealt;
+    private int dmgTaken;
+    private int visionScore;
+    private int totalcs;
+    private int longestTimeLiving;
 
     public Participant() {
         this.totalWin = 0;
@@ -222,6 +228,54 @@ public class Participant {
 
     public void setKda(float kda) {
         this.kda = kda;
+    }
+
+    public int getGold() {
+        return gold;
+    }
+
+    public void setGold(int gold) {
+        this.gold = gold;
+    }
+
+    public int getDmgDealt() {
+        return dmgDealt;
+    }
+
+    public void setDmgDealt(int dmgDealt) {
+        this.dmgDealt = dmgDealt;
+    }
+
+    public int getDmgTaken() {
+        return dmgTaken;
+    }
+
+    public void setDmgTaken(int dmgTaken) {
+        this.dmgTaken = dmgTaken;
+    }
+
+    public int getVisionScore() {
+        return visionScore;
+    }
+
+    public void setVisionScore(int visionScore) {
+        this.visionScore = visionScore;
+    }
+
+    public int getTotalcs() {
+        return totalcs;
+    }
+
+    public void setTotalcs(int totalcs) {
+        this.totalcs = totalcs;
+    }
+
+    public int getLongestTimeLiving() {
+        return longestTimeLiving;
+    }
+
+    public void setLongestTimeLiving(int longestTimeLiving) {
+        this.longestTimeLiving = longestTimeLiving;
     }
 
     
