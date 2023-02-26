@@ -24,7 +24,6 @@ import apony.lol.LooserQAnalyse.service.interfaces.IGameService;
 import apony.lol.LooserQAnalyse.service.interfaces.IPlayerService;
 import apony.lol.LooserQAnalyse.service.interfaces.IUtilService;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/game")
 public class GameController {
