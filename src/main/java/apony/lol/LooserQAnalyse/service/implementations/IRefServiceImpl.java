@@ -16,10 +16,9 @@ public class IRefServiceImpl implements IRefService {
     @Override
     public void init() {
 
-        bucket = Bucket.builder().addLimit(Bandwidth.classic(30,
-                Refill.intervally(30, Duration.ofMinutes(1))))
-                .addLimit(Bandwidth.classic(5, Refill.intervally(5,
-                        Duration.ofSeconds(1))))
+        bucket = Bucket.builder()
+                .addLimit(Bandwidth.classic(4, Refill.intervally(4,
+                        Duration.ofSeconds(5))))
                 .build();
 
     }

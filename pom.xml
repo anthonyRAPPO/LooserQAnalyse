@@ -72,15 +72,13 @@
             <target>17</target>
         </configuration>
     </plugin>
+	
 		</plugins>
 	</build>
 
 <profiles>
         <profile>
                     <id>prod</id>
-                    <properties>
-                        <war.name>prod</war.name>
-                    </properties>
         </profile>
     </profiles>
 </project>

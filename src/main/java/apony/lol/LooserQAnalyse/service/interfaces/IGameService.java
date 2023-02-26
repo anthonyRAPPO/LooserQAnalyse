@@ -12,18 +12,18 @@ import apony.lol.LooserQAnalyse.model.enumeration.Region;
 
 public interface IGameService {
 
-    List<String> getHistoryByPuuidQueueDateNumber(String userPuuid, Queue queue, long dateDebutEpochSecond,
-            long dateFinEpochSecond, int count, Region region) throws NotResultException;
+        List<String> getHistoryByPuuidQueueDateNumber(String userPuuid, Queue queue, long dateDebutEpochSecond,
+                        long dateFinEpochSecond, int count, Region region) throws NotResultException;
 
-    Game getGameById(String gameid, String userPuuid, Region region) throws NotResultException;
+        Game getGameById(String gameid, String userPuuid, Region region) throws NotResultException;
 
-    List<Game> getGameListByGameIdList(List<String> userGameIds, String userPuuid, Region region);
+        List<Game> getGameListByGameIdList(List<String> userGameIds, String userPuuid, Region region);
 
-    void fillRecapByLstGame(List<Game> gameUserLst, String userPuuid, Recap recap, boolean b);
+        void fillRecapByLstGame(List<Game> gameUserLst, String userPuuid, Recap recap, boolean b);
 
-    int getTeamIdFromPuuid(Game selectedGame, String userPuuid);
+        int getTeamIdFromPuuid(Game selectedGame, String userPuuid);
 
-    void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region,
-            Platform platform);
+        Participant fillParticipantForGame(Game game, Queue queue, int numberGame, Region region, Platform platform,
+                        Participant participant);
 
 }

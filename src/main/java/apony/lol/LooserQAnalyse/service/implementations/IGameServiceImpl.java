@@ -177,43 +177,42 @@ public class IGameServiceImpl implements IGameService {
     }
 
     @Override
-    public void fillParticipantLstForGame(List<Participant> result, Game game, Queue queue, int nbGame, Region region,
-            Platform platform) {
-        LocalDateTime dateCreationGame = LocalDateTime.ofEpochSecond(game.getTimeStampCreation(), 0,
-                ZoneOffset.UTC);
-        LocalDateTime dateLimiteRecherche = dateCreationGame.minusDays(100);
-        // Pour la game passée en parametre on recupere l'ensemble des participants
-        for (Participant participant : game.getLstParticipants()) {
-            try {
-                // on determine si le participant est un allié
-                participant.setAlly(participant.getTeamId() == game.getAllyTeam());
-                participant.setKda((float)((participant.getKill()+participant.getAssist())/(float)participant.getDeath()));
-                // recupération des données de ranking du participant
-                this.fillRankInformationOfParticipant(participant, platform);
-                // pour chaque participant on recupere les x dernière games
-                List<String> participantGameIds = this.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
-                        queue, dateLimiteRecherche.toEpochSecond(ZoneOffset.UTC),
-                        dateCreationGame.toEpochSecond(ZoneOffset.UTC), nbGame, region);
-                List<Game> gameParticipantLst = this.getGameListByGameIdList(participantGameIds, participant.getPuuid(),
-                        region);
-                if (gameParticipantLst.isEmpty()) {
-                    logger.error("Erreur lors de la récupératoin des games par id");
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-                // on comptabilise le nombre de win/loose pour chaque participant
-                for (Game gameParticipant : gameParticipantLst) {
-                    if (gameParticipant.isWin()) {
-                        participant.incrementTotalWin();
-                    } else {
-                        participant.incrementTotalLoose();
-                    }
-                }
-                result.add(participant);
-            } catch (NotResultException e) {
-                logger.warn(String.format("L'historique du participant %s n'a pas pu être retrouvé",
-                        participant.getPuuid()));
+    public Participant fillParticipantForGame(Game game, Queue queue, int numberGame, Region region, Platform platform,
+            Participant participant) {
+
+        try {
+            LocalDateTime dateCreationGame = LocalDateTime.ofEpochSecond(game.getTimeStampCreation(), 0,
+                    ZoneOffset.UTC);
+            LocalDateTime dateLimiteRecherche = dateCreationGame.minusDays(100);
+            // on determine si le participant est un allié
+            participant.setAlly(participant.getTeamId() == game.getAllyTeam());
+            participant.setKda(
+                    (float) ((participant.getKill() + participant.getAssist()) / (float) participant.getDeath()));
+            // recupération des données de ranking du participant
+            this.fillRankInformationOfParticipant(participant, platform);
+            // pour chaque participant on recupere les x dernière games
+            List<String> participantGameIds = this.getHistoryByPuuidQueueDateNumber(participant.getPuuid(),
+                    queue, dateLimiteRecherche.toEpochSecond(ZoneOffset.UTC),
+                    dateCreationGame.toEpochSecond(ZoneOffset.UTC), numberGame, region);
+            List<Game> gameParticipantLst = this.getGameListByGameIdList(participantGameIds, participant.getPuuid(),
+                    region);
+            if (gameParticipantLst.isEmpty()) {
+                logger.error("Erreur lors de la récupératoin des games par id");
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
+            // on comptabilise le nombre de win/loose pour chaque participant
+            for (Game gameParticipant : gameParticipantLst) {
+                if (gameParticipant.isWin()) {
+                    participant.incrementTotalWin();
+                } else {
+                    participant.incrementTotalLoose();
+                }
+            }
+        } catch (NotResultException e) {
+            logger.warn(String.format("L'historique du participant %s n'a pas pu être retrouvé",
+                    participant.getPuuid()));
         }
+        return participant;
     }
 
     private void fillRankInformationOfParticipant(Participant participant, Platform platform) {
@@ -232,7 +231,8 @@ public class IGameServiceImpl implements IGameService {
             }
         } catch (NotResultException e) {
             logger.error(String
-            .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()),e);
+                    .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()),
+                    e);
             participant.setLeaguePoints(-1);
             participant.setTotalLooseSeason(-1);
             participant.setTotalWinSeason(-1);
@@ -245,7 +245,7 @@ public class IGameServiceImpl implements IGameService {
     private void fillParticipantWithResJson(JSONArray resJson, Participant participant) {
         if (resJson.isEmpty()) {
             logger.error(String
-            .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
+                    .format("The player : %s didn't played this season on ranked 5v5", participant.getSummonerName()));
             participant.setRank(Rank.EMPTY);
             participant.setTier(Tier.EMPTY);
             participant.setLeaguePoints(-1);

@@ -3,6 +3,7 @@ package apony.lol.LooserQAnalyse.controller;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,26 +42,34 @@ public class ParticipantController {
 
     Logger logger = LoggerFactory.getLogger(ParticipantController.class);
 
-    @PostMapping("/{queue}:{platform}:{numberGame}")
-    public List<Participant> getParticipantByGame(@RequestBody Game game, @PathVariable("queue") Queue queue,
-            @PathVariable("platform") Platform platform, @PathVariable("numberGame") int numberGame) {
-        if (!isRequestCorrect(game, queue, platform, numberGame)) {
-            logger.warn("Une requete incorrecte à été receptionnée");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect variable sent");
-        }
-        Region region = utilService.getRegionByPlatform(platform);
-        if (Objects.isNull(region)) {
-            logger.warn("Une requete à été effectuée avec une variable platform incorrect");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect variable sent");
-        }
-        List<Participant> result = new ArrayList<>();
-        gameService.fillParticipantLstForGame(result, game, queue, numberGame, region, platform);
+    @PostMapping("/{queue}:{platform}:{numberGame}:{participantId}")
+    public Participant fillParticipantByGame(@RequestBody Game game, @PathVariable("queue") Queue queue,
+            @PathVariable("platform") Platform platform, @PathVariable("numberGame") int numberGame,
+            @PathVariable("participantId") String participantId) {
 
-        return result;
+        if (!isRequestCorrect(game, queue, platform, numberGame, participantId)) {
+            logger.warn("Une requete incorrecte à été receptionnée");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Incorrect variable sent");
+        }
+        List<Participant> lstparticipant = game.getLstParticipants().stream()
+                .filter(p -> p.getId().equals(participantId)).collect(Collectors.toList());
+        Region region = utilService.getRegionByPlatform(platform);
+        if (Objects.isNull(region) || Objects.isNull(lstparticipant) ||
+                lstparticipant.size() != 1) {
+            logger.warn("Une requete à été effectuée avec une variable platform incorrect");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Incorrect variable sent");
+        }
+
+        return gameService.fillParticipantForGame(game, queue, numberGame, region,
+                platform, lstparticipant.get(0));
+
     }
 
-    private boolean isRequestCorrect(Game game, Queue queue, Platform platform, int numberGame) {
+    private boolean isRequestCorrect(Game game, Queue queue, Platform platform, int numberGame, String participantId) {
         return (Objects.nonNull(game) && Objects.nonNull(queue) && Objects.nonNull(platform)
+                && Objects.nonNull(participantId) && !participantId.isEmpty()
                 && numberGame > 0 && numberGame < 20);
     }
 
