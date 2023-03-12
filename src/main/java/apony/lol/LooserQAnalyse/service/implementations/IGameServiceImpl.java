@@ -200,14 +200,20 @@ public class IGameServiceImpl implements IGameService {
                 logger.error("Erreur lors de la récupératoin des games par id");
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            // on comptabilise le nombre de win/loose pour chaque participant
+            // on comptabilise le nombre de win/loose + kda pour chaque participant
             for (Game gameParticipant : gameParticipantLst) {
                 if (gameParticipant.isWin()) {
                     participant.incrementTotalWin();
                 } else {
                     participant.incrementTotalLoose();
                 }
+                participant.setTotalAssist(participant.getTotalAssist() + gameParticipant.getAssists());
+                participant.setTotalDeath(participant.getTotalDeath() + gameParticipant.getDeaths());
+                participant.setTotalKill(participant.getTotalKill() + gameParticipant.getKills());
             }
+            participant.setTotalKda(
+                    (float) ((participant.getTotalKill() + participant.getTotalAssist())
+                            / (float) participant.getTotalDeath()));
         } catch (NotResultException e) {
             logger.warn(String.format("L'historique du participant %s n'a pas pu être retrouvé",
                     participant.getPuuid()));

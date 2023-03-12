@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import apony.lol.LooserQAnalyse.exception.NotResultException;
 import apony.lol.LooserQAnalyse.model.Game;
+import apony.lol.LooserQAnalyse.model.PlayerInfo;
 import apony.lol.LooserQAnalyse.model.enumeration.Platform;
 import apony.lol.LooserQAnalyse.model.enumeration.Queue;
 import apony.lol.LooserQAnalyse.model.enumeration.Region;
@@ -59,16 +60,16 @@ public class GameController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect variable sent");
         }
         try {
-            String userPuuid = playerService.getPlayerPuuidByNameAndPlatform(login, platform);
-            if (Objects.isNull(userPuuid) || userPuuid.isEmpty()) {
+            PlayerInfo playerInfo = playerService.getPlayerPuuidByNameAndPlatform(login, platform);
+            if (Objects.isNull(playerInfo) || playerInfo.getPuuid().isEmpty() || playerInfo.getSummonerId().isEmpty()) {
                 // aucun joueur trouvé pour ce login
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No player found");
             }
             try {
-                List<String> userGameIds = gameService.getHistoryByPuuidQueueDateNumber(userPuuid, queue,
+                List<String> userGameIds = gameService.getHistoryByPuuidQueueDateNumber(playerInfo.getPuuid(), queue,
                         dateDebutEpochSecond,
                         dateFinEpochSecond, count, region);
-                return gameService.getGameListByGameIdList(userGameIds, userPuuid, region);
+                return gameService.getGameListByGameIdList(userGameIds, playerInfo.getPuuid(), region);
             } catch (NotResultException e) {
                 // aucune partie trouvée dans l'historique avec les param donnés
                 return new ArrayList<Game>();

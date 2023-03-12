@@ -30,15 +30,23 @@ public class Participant {
     private int visionScore;
     private int totalcs;
     private int longestTimeLiving;
+    private int totalKill;
+    private int totalDeath;
+    private int totalAssist;
+    private float totalKda;
 
     public Participant() {
         this.totalWin = 0;
         this.totalLoose = 0;
+        this.totalKill = 0;
+        this.totalDeath = 0;
+        this.totalAssist = 0;
     }
 
     public Participant(String id, String puuid, int teamId, boolean win, int totalWin, int totalLoose,
             String championPlayed, String summonerName, String teamPosition, boolean isAlly, Tier tier, Rank rank,
-            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo,int kill,int death,int assist,float kda) {
+            int leaguePoints, int totalWinSeason, int totalLooseSeason, int calculatedElo, int kill, int death,
+            int assist, float kda, int totalKill, int totalDeath, int totalAssist, float totalKda) {
         this.id = id;
         this.puuid = puuid;
         this.teamId = teamId;
@@ -55,10 +63,46 @@ public class Participant {
         this.totalWinSeason = totalWinSeason;
         this.totalLooseSeason = totalLooseSeason;
         this.calculatedElo = calculatedElo;
-        this.kill= kill;
-        this.death= death;
-        this.assist= assist;
-        this.kda=kda;
+        this.kill = kill;
+        this.death = death;
+        this.assist = assist;
+        this.kda = kda;
+        this.totalDeath = totalDeath;
+        this.totalKill = totalKill;
+        this.totalAssist = totalAssist;
+        this.totalKda = totalKda;
+    }
+
+    public int getTotalKill() {
+        return totalKill;
+    }
+
+    public void setTotalKill(int totalKill) {
+        this.totalKill = totalKill;
+    }
+
+    public int getTotalDeath() {
+        return totalDeath;
+    }
+
+    public void setTotalDeath(int totalDeath) {
+        this.totalDeath = totalDeath;
+    }
+
+    public int getTotalAssist() {
+        return totalAssist;
+    }
+
+    public void setTotalAssist(int totalAssist) {
+        this.totalAssist = totalAssist;
+    }
+
+    public float getTotalKda() {
+        return totalKda;
+    }
+
+    public void setTotalKda(float totalKda) {
+        this.totalKda = totalKda;
     }
 
     public String getPuuid() {
@@ -277,8 +321,5 @@ public class Participant {
     public void setLongestTimeLiving(int longestTimeLiving) {
         this.longestTimeLiving = longestTimeLiving;
     }
-
-    
-    
 
 }

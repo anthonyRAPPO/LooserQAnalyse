@@ -8,12 +8,17 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Value("${front.url}")
-    private String frontUrl;
+    @Value("${front.url1}")
+    private String frontUrl1;
+
+    @Value("${front.url2}")
+    private String frontUrl2;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins(frontUrl);
+        registry.addMapping("/**").allowedOrigins(frontUrl1, frontUrl2)
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*").maxAge(3600);
     }
 
 }

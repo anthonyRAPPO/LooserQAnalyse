@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import apony.lol.LooserQAnalyse.exception.NotResultException;
+import apony.lol.LooserQAnalyse.model.PlayerInfo;
 import apony.lol.LooserQAnalyse.model.enumeration.Platform;
 import apony.lol.LooserQAnalyse.service.interfaces.IPlayerService;
 import apony.lol.LooserQAnalyse.service.interfaces.IRequestService;
@@ -26,14 +27,14 @@ public class IPlayerServiceImpl implements IPlayerService {
     Logger logger = LoggerFactory.getLogger(IPlayerServiceImpl.class);
 
     @Override
-    public String getPlayerPuuidByNameAndPlatform(String name, Platform platform) throws NotResultException {
+    public PlayerInfo getPlayerPuuidByNameAndPlatform(String name, Platform platform) throws NotResultException {
         HttpClient httpClient = requestService.createHttpClient();
         StringBuilder strbUri = requestService.createRequestUri(platform.getPath(), SUMMONER_BY_NAME_ENDPOINT);
         strbUri.append(name);
         String res = requestService.sendGetRequest(strbUri.toString(), httpClient);
         try {
             JSONObject resJson = new JSONObject(res);
-            return resJson.getString("puuid");
+            return new PlayerInfo(resJson.getString("puuid"), resJson.getString("id"));
         } catch (JSONException e) {
             logger.error("Erreur lors de la récupération du puuid", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error, invalid response by RIOT API");
